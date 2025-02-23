@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest; // LoginRequest をインポート
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -37,5 +38,11 @@ class AuthController extends Controller
         return back()->withErrors([
             'email' => 'ログイン情報が登録されていません',
         ]);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout(); // ユーザーをログアウト
+        return redirect('/login')->with('status', 'ログアウトしました。'); // リダイレクト
     }
 }

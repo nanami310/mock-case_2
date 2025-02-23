@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ヘッダー</title>
+    <title>@yield('title', 'デフォルトタイトル')</title>
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
 </head>
 <body>
@@ -23,11 +23,12 @@
                     </li>
                 </ul>
             @else
-                <ul>
-                    <li><a href="{{ url('/register') }}">ログイン</a></li>
-                </ul>
             @endif
         </nav>
     </header>
+
+    <div class="container">
+        @yield('content') <!-- ここに子ビューのコンテンツが挿入される -->
+    </div>
 </body>
 </html>

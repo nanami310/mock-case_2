@@ -15,6 +15,10 @@ use App\Http\Controllers\AttendanceController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/', function () {
+    return view('welcome'); // または適切なビュー
+});
+
 
 Route::get('/register', function () {
     return view('register'); // 会員登録画面のビューを表示
@@ -24,9 +28,10 @@ Route::post('/register', [AuthController::class, 'register']);
 // ログインルート
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login'); // ログインフォームを表示するルート
 Route::post('/login', [AuthController::class, 'login']); // ログイン処理を行うルート
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/attendance', [AttendanceController::class, 'index'])->middleware('auth');
 Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->middleware('auth');
 Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->middleware('auth');
-Route::post('/attendance/start-break', [AttendanceController::class, 'startBreak'])->middleware('auth');
-Route::post('/attendance/end-break', [AttendanceController::class, 'endBreak'])->middleware('auth');
+Route::post('/attendance/take-break', [AttendanceController::class, 'takeBreak']);
+Route::post('/attendance/return-from-break', [AttendanceController::class, 'returnFromBreak']);

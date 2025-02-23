@@ -1,15 +1,6 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会員登録画面</title>
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-</head>
-<body>
-    @include('header')  <!-- ヘッダーをインクルード -->
-
-    <main>
+@extends('layouts.header')
+@section('content')
+    <div>
         <h1>会員登録</h1>
         <form action="{{ url('/register') }}" method="POST">
             @csrf
@@ -41,6 +32,5 @@
             <button type="submit">登録する</button>
         </form>
         <p><a href="{{ url('/login') }}">ログインはこちら</a></p>
-    </main>
-</body>
-</html>
+</div>
+@endsection
