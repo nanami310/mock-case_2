@@ -6,11 +6,17 @@
         @csrf
         <div>
             <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" value="{{ old('email') }}">
+            @error('email')
+                <span class="error">{{ $message }}</span>
+            @enderror
         </div>
         <div>
             <label for="password">パスワード</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password">
+            @error('password')
+                <span class="error">{{ $message }}</span>
+            @enderror
         </div>
         <button type="submit">ログイン</button>
     </form>

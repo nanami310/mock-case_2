@@ -8,47 +8,51 @@
         $date = \Carbon\Carbon::now()->format('Y年n月j日') . " (" . $currentDay . ")";
         $time = \Carbon\Carbon::now()->format('H:i');
     @endphp
-    
+
     @if ($attendance)
-        @if ($attendance->status === 'off')
-            <h3>勤務外</h3>
-            <p>{{ $date }}</p>
-            <p>{{ $time }}</p>
+        <h3>
+            @switch($attendance->status)
+                @case('on_duty')
+                    勤務中
+                    @break
+                @case('on_break')
+                    休憩中
+                    @break
+                @case('off_work')
+                    退勤済
+                    @break
+                @default
+                    勤務外
+            @endswitch
+        </h3>
+        <p>{{ $date }}</p>
+        <p>{{ $time }}</p>
+
+        @if ($attendance->status === 'off_duty')
             <form action="{{ url('/attendance/check-in') }}" method="POST">
                 @csrf
-                <button type="submit">出勤</button>
+                <button type="submit" class="btn btn-primary">出勤</button>
             </form>
-        @elseif ($attendance->status === 'working')
-            <h3>出勤中</h3>
-            <p>{{ $date }}</p>
-            <p>{{ $time }}</p>
+        @elseif ($attendance->status === 'on_duty')
             <form action="{{ url('/attendance/check-out') }}" method="POST">
                 @csrf
-                <button type="submit">退勤</button>
+                <button type="submit" class="btn btn-danger">退勤</button>
             </form>
             <form action="{{ url('/attendance/take-break') }}" method="POST">
                 @csrf
-                <button type="submit">休憩入</button>
+                <button type="submit" class="btn btn-warning">休憩入</button>
             </form>
         @elseif ($attendance->status === 'on_break')
-            <h3>休憩中</h3>
-            <p>{{ $date }}</p>
-            <p>{{ $time }}</p>
             <form action="{{ url('/attendance/return-from-break') }}" method="POST">
                 @csrf
-                <button type="submit">休憩戻</button>
+                <button type="submit" class="btn btn-success">休憩戻</button>
             </form>
-        @elseif ($attendance->status === 'checked_out')
-            <h3>退勤済</h3>
-            <p>{{ $date }}</p>
-            <p>{{ $time }}</p>
-            <p>お連れ様でした。</p>
         @endif
     @else
         <h3>勤怠情報が見つかりません。</h3>
         <form action="{{ url('/attendance/check-in') }}" method="POST">
             @csrf
-            <button type="submit">出勤</button>
+            <button type="submit" class="btn btn-primary">出勤</button>
         </form>
     @endif
 

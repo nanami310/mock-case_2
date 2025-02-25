@@ -35,3 +35,5 @@ Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->m
 Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->middleware('auth');
 Route::post('/attendance/take-break', [AttendanceController::class, 'takeBreak']);
 Route::post('/attendance/return-from-break', [AttendanceController::class, 'returnFromBreak']);
+
+Route::get('/attendance/list', [AttendanceController::class, 'attendanceList'])->name('attendance.list');
