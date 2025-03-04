@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,12 +15,16 @@ class Attendance extends Model
         'date',
         'check_in',
         'check_out',
-        'break_time',
         'total_hours',
     ];
 
     public function hasCheckedInToday()
     {
         return $this->status === 'on_duty'; // ステータスを 'on_duty' に変更
+    }
+
+    public function breaks()
+    {
+        return $this->hasMany(BreakTime::class);
     }
 }

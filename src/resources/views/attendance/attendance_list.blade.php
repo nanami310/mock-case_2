@@ -24,13 +24,31 @@
         <tbody>
             @foreach ($attendanceRecords as $record)
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td> <!-- Carbonに変換 -->
+                    <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td>
                     <td>{{ $record->check_in ? \Carbon\Carbon::parse($record->check_in)->format('H:i') : '' }}</td>
                     <td>{{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('H:i') : '' }}</td>
-                    <td>{{ $record->break_time ?? '' }}</td>
-                    <td>{{ $record->total_hours ?? '' }}</td>
                     <td>
-                        <a href="{{ url('/attendance/' . $record->id) }}">詳細</a>
+                        @php
+                            $totalBreakTime = $record->breaks->sum(function($break) {
+                                return $break->end ? \Carbon\Carbon::parse($break->end)->diffInMinutes(\Carbon\Carbon::parse($break->start)) : 0;
+                            });
+                        @endphp
+                        {{ $totalBreakTime }} 分
+                    </td>
+                    <td>
+                        @php
+                            if ($record->check_in && $record->check_out) {
+                                $checkIn = \Carbon\Carbon::parse($record->check_in);
+                                $checkOut = \Carbon\Carbon::parse($record->check_out);
+                                $totalHours = $checkOut->diffInMinutes($checkIn) - $totalBreakTime;
+                                echo floor($totalHours / 60) . ' 時間 ' . ($totalHours % 60) . ' 分';
+                            } else {
+                                echo '';
+                            }
+                        @endphp
+                    </td>
+                    <td>
+                        <a href="{{ route('attendance.show', $record->id) }}">詳細</a>
                     </td>
                 </tr>
             @endforeach

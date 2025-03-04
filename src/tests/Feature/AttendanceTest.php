@@ -188,7 +188,7 @@ public function breaks_can_be_taken_multiple_times_a_day()
     $response = $this->get('/attendance');
     $response->assertSee('休憩中');
 }
-    /** @test */
+/** @test */
 public function return_from_break_button_works_correctly()
 {
     $user = User::factory()->create();
@@ -196,28 +196,33 @@ public function return_from_break_button_works_correctly()
     // 勤怠データを作成
     Attendance::create([
         'user_id' => $user->id,
-        'status' => 'on_break',
+        'status' => 'on_duty', // 初期状態を on_duty に設定
         'created_at' => now(),
         'updated_at' => now(),
     ]);
     
     $this->actingAs($user);
 
+    // 休憩を取る
+    $this->post('/attendance/take-break');
+
+    // 休憩から戻る
     $this->post('/attendance/return-from-break');
 
     $response = $this->get('/attendance');
-    $response->assertSee('勤務中');
+    $response->assertSee('勤務中'); // 勤務中の状態を確認
 }
+
 /** @test */
 public function return_from_break_can_be_done_multiple_times_a_day()
 {
     // ユーザーを作成
     $user = User::factory()->create();
 
-    // 勤怠データを作成（初期状態を on_break に設定）
+    // 勤怠データを作成（初期状態を on_duty に設定）
     Attendance::create([
         'user_id' => $user->id,
-        'status' => 'on_break',
+        'status' => 'on_duty',
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -225,7 +230,10 @@ public function return_from_break_can_be_done_multiple_times_a_day()
     // ユーザーをログイン状態にする
     $this->actingAs($user);
 
-    // 1回目の休憩から戻る
+    // 1回目の休憩を取る
+    $this->post('/attendance/take-break');
+
+    // 休憩から戻る
     $this->post('/attendance/return-from-break');
 
     // 勤務中の状態を確認
@@ -246,8 +254,6 @@ public function return_from_break_can_be_done_multiple_times_a_day()
     $response = $this->get('/attendance');
     $response->assertSee('勤務中');
 }
-
-
     /** @test */
 public function check_out_button_works_correctly()
 {

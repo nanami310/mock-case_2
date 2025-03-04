@@ -26,7 +26,22 @@
             @endswitch
         </h3>
         <p>{{ $date }}</p>
-        <p>{{ $time }}</p>
+        <p id="current-time">{{ $time }}</p> <!-- 時刻を表示する要素 -->
+
+        <script>
+            // 現在の時刻をリアルタイムで更新する関数
+            function updateTime() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('current-time').textContent = hours + ':' + minutes;
+            }
+
+            // 1分ごとに時刻を更新
+            setInterval(updateTime, 60000);
+            // ページが読み込まれたときに即座に時刻を更新
+            updateTime();
+        </script>
 
         @if ($attendance->status === 'off_duty')
             <form action="{{ url('/attendance/check-in') }}" method="POST">

@@ -37,3 +37,5 @@ Route::post('/attendance/take-break', [AttendanceController::class, 'takeBreak']
 Route::post('/attendance/return-from-break', [AttendanceController::class, 'returnFromBreak']);
 
 Route::get('/attendance/list', [AttendanceController::class, 'attendanceList'])->name('attendance.list');
+Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
