@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AttendanceController;
-
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminAttendanceController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -39,3 +40,15 @@ Route::post('/attendance/return-from-break', [AttendanceController::class, 'retu
 Route::get('/attendance/list', [AttendanceController::class, 'attendanceList'])->name('attendance.list');
 Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
+
+
+// 管理者
+Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+Route::get('/admin/attendance/list', [AdminAuthController::class, 'adminAttendanceIndex'])->name('admin.attendance.list')->middleware('auth');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+Route::get('/admin/aattendance/{id}', [AdminAttendanceController::class, 'show'])->name('admin.attendance.show');
+Route::post('/admin/aattendance/{id}/update', [AdminAttendanceController::class, 'update'])->name('admin.attendance.update');
+
+Route::get('/admin/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance.index');
