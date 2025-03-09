@@ -95,7 +95,7 @@ class AttendanceController extends Controller
         $attendance->save();
 
         // 休憩時間を新規作成
-        $attendance->breaks()->create(['start' => now()]);
+        $attendance->breaks()->create(['start' => now(), 'end' => null]); // end を null に設定
     }
 
     return redirect('/attendance');
@@ -108,16 +108,19 @@ public function returnFromBreak(Request $request)
     if ($attendance && $attendance->status === 'on_break') {
         $attendance->status = 'on_duty'; // 勤務に戻る
         $break = $attendance->breaks()->latest()->first(); // 最新の休憩を取得
-        $break->end = now(); // 休憩終了時刻を保存
-        $break->save();
+        
+        if ($break) {
+            $break->end = now(); // 休憩終了時刻を保存
+            $break->save();
 
-        // Carbonインスタンスに変換してから差分を計算
-        $breakStart = Carbon::parse($break->start);
-        $breakEnd = Carbon::parse($break->end);
+            // Carbonインスタンスに変換してから差分を計算
+            $breakStart = Carbon::parse($break->start);
+            $breakEnd = Carbon::parse($break->end);
 
-        // 休憩時間を計算して保存
-        $attendance->break_time += $breakEnd->diffInMinutes($breakStart);
-        $attendance->save();
+            // 休憩時間を計算して保存
+            $attendance->break_time += $breakEnd->diffInMinutes($breakStart);
+            $attendance->save();
+        }
     }
 
     return redirect('/attendance');
@@ -147,7 +150,7 @@ public function returnFromBreak(Request $request)
         return $this->belongsTo(User::class);
     }
 
-public function show($id)
+    public function show($id)
 {
     $attendance = Attendance::findOrFail($id);
     
@@ -167,9 +170,10 @@ public function show($id)
         $break->end = Carbon::parse($break->end);
     }
 
-    return view('attendance.show', compact('attendance'));
+    // $breakTimesをビューに渡す
+    $breakTimes = $attendance->breaks; // 休憩時間を取得
+    return view('attendance.show', compact('attendance', 'breakTimes')); // $breakTimesを追加
 }
-
     
 public function update(AttendanceRequest $request, $id)
 {

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminAttendanceController;
+use App\Http\Controllers\Admin\StaffController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -52,3 +53,7 @@ Route::get('/admin/aattendance/{id}', [AdminAttendanceController::class, 'show']
 Route::post('/admin/aattendance/{id}/update', [AdminAttendanceController::class, 'update'])->name('admin.attendance.update');
 
 Route::get('/admin/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance.index');
+
+Route::get('/admin/staff/list', [StaffController::class, 'index'])->name('admin.staff.list');
+Route::get('/admin/attendance/staff/{id}', [StaffController::class, 'attendance'])->name('admin.attendance.staff');
+Route::post('/admin/attendance/staff/{id}/export', [StaffController::class, 'exportCsv'])->name('admin.attendance.export');

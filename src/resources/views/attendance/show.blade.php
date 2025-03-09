@@ -36,24 +36,29 @@
 
         <div class="form-group">
     <label for="break_time">休憩</label>
-    @if(is_array($attendance->breaks) && count($attendance->breaks) > 0)
-        @foreach ($attendance->breaks as $index => $break)
-            <input type="time" name="breaks[{{ $index }}][start]" value="{{ $break->start->format('H:i') }}" class="form-control" required {{ 
+    @if($breakTimes->isNotEmpty())
+        @foreach ($breakTimes as $index => $break)
+            <input type="time" name="breaks[{{ $index }}][start]" value="{{ $break->start ? $break->start->format('H:i') : '00:00' }}" 
+class="form-control" required {{ 
             $attendance->status === 'pending' ? 'disabled' : '' }}>
             @error("breaks.$index.start")
                 <div class="text-danger">{{ $message }}</div>
             @enderror
 
-            <input type="time" name="breaks[{{ $index }}][end]" value="{{ $break->end->format('H:i') }}" class="form-control" required {{ 
+            <input type="time" name="breaks[{{ $index }}][end]" value="{{ $break->end ? $break->end->format('H:i') : '00:00' }}" 
+class="form-control" required {{ 
             $attendance->status === 'pending' ? 'disabled' : '' }}>
             @error("breaks.$index.end")
                 <div class="text-danger">{{ $message }}</div>
             @enderror
         @endforeach
     @else
-        <p>休憩データがありません。</p>
+        <p>勤怠情報はありません</p>
     @endif
 </div>
+
+
+
 
         <div class="form-group">
             <label for="remarks">備考</label>

@@ -1,20 +1,19 @@
 @extends('layouts.adminheader')
 @section('content')
 <div class="attendance-list">
-    <h1>勤怠一覧（管理者）</h1>
+    <h1>スタッフ別勤怠一覧（管理者）</h1>
 
-    <div class="date-selector">
-        <button onclick="changeDay(-1)">← 前日</button>
-        <span id="current-date">{{ $currentYear }}年 {{ $currentMonth }}月 {{ $currentDay }}日</span>
-        <button onclick="changeDay(1)">翌日 →</button>
-        <input type="date" id="date-picker" value="{{ $currentYear }}-{{ str_pad($currentMonth, 2, '0', STR_PAD_LEFT) }}-{{ str_pad($currentDay, 2, '0', STR_PAD_LEFT) }}" onchange="selectDate()">
-    </div>
+    <div class="month-selector">
+    <button onclick="changeMonth(-1)">← 前月</button>
+    <span id="current-month">{{ $currentYear }}年 {{ $currentMonth }}月</span>
+    <button onclick="changeMonth(1)">翌月 →</button>
+    <input type="month" id="month-picker" value="{{ $currentYear }}-{{ str_pad($currentMonth, 2, '0', STR_PAD_LEFT) }}" onchange="selectMonth()">
+</div>
 
     <table>
         <thead>
             <tr>
-                <th>名前</th>
-                <th>日付</th>
+                <th>日付（M/D 曜日）</th>
                 <th>出勤時間</th>
                 <th>退勤時間</th>
                 <th>休憩時間</th>
@@ -25,8 +24,7 @@
         <tbody>
             @foreach ($attendanceRecords as $record)
                 <tr>
-                    <td>{{ $record->user->name }}</td>
-                    <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($record->date)->format('n/j D') }}</td>
                     <td>{{ $record->check_in ? \Carbon\Carbon::parse($record->check_in)->format('H:i') : '' }}</td>
                     <td>{{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('H:i') : '' }}</td>
                     <td>
@@ -56,24 +54,33 @@
             @endforeach
             @if ($attendanceRecords->isEmpty())
                 <tr>
-                    <td colspan="7">勤怠情報がありません。</td>
+                    <td colspan="6">勤怠情報がありません。</td>
                 </tr>
             @endif
         </tbody>
     </table>
+
+    <form method="POST" action="{{ route('admin.attendance.export', $id) }}">
+    @csrf
+    <input type="hidden" name="year" value="{{ $currentYear }}"> <!-- 修正 -->
+    <input type="hidden" name="month" value="{{ $currentMonth }}"> <!-- 修正 -->
+    <button type="submit">CSV出力</button>
+</form>
 </div>
 
 <script>
-    function changeDay(direction) {
-        const currentDate = document.getElementById('date-picker').value;
-        const date = new Date(currentDate);
-        date.setDate(date.getDate() + direction);
-        window.location.href = '/admin/attendance/list?year=' + date.getFullYear() + '&month=' + (date.getMonth() + 1) + '&day=' + date.getDate();
+    const staffId = {{ $id }}; // コントローラーから渡されたスタッフIDをJavaScriptに渡す
+
+    function changeMonth(direction) {
+        const currentMonth = document.getElementById('month-picker').value;
+        const date = new Date(currentMonth);
+        date.setMonth(date.getMonth() + direction);
+        window.location.href = '/admin/attendance/staff/' + staffId + '?year=' + date.getFullYear() + '&month=' + (date.getMonth() + 1);
     }
 
-    function selectDate() {
-        const selectedDate = document.getElementById('date-picker').value;
-        window.location.href = '/admin/attendance/list?year=' + selectedDate.split('-')[0] + '&month=' + selectedDate.split('-')[1] + '&day=' + selectedDate.split('-')[2];
+    function selectMonth() {
+        const selectedMonth = document.getElementById('month-picker').value;
+        window.location.href = '/admin/attendance/staff/' + staffId + '?year=' + selectedMonth.split('-')[0] + '&month=' + selectedMonth.split('-')[1];
     }
 </script>
 @endsection
