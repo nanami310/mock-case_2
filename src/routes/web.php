@@ -42,11 +42,18 @@ Route::get('/attendance/list', [AttendanceController::class, 'attendanceList'])-
 Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
 
+Route::get('/stamp_correction_request/list', [AttendanceController::class, 'requestList'])->name('stamp_correction_request.list');
+Route::post('/attendance/request-change/{id}', [AttendanceController::class, 'requestChange'])->name('attendance.requestChange');
+
+Route::get('/attendance/approvals', [AttendanceController::class, 'approvals'])->name('attendance.approvals');
+
+
 
 // 管理者
 Route::get('/admin/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
 Route::get('/admin/attendance/list', [AdminAuthController::class, 'adminAttendanceIndex'])->name('admin.attendance.list')->middleware('auth');
+Route::put('/admin/attendance/update/{id}', [AdminAttendanceController::class, 'update'])->name('attendance.update');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 Route::get('/admin/aattendance/{id}', [AdminAttendanceController::class, 'show'])->name('admin.attendance.show');
@@ -57,3 +64,6 @@ Route::get('/admin/attendance', [AdminAttendanceController::class, 'index'])->na
 Route::get('/admin/staff/list', [StaffController::class, 'index'])->name('admin.staff.list');
 Route::get('/admin/attendance/staff/{id}', [StaffController::class, 'attendance'])->name('admin.attendance.staff');
 Route::post('/admin/attendance/staff/{id}/export', [StaffController::class, 'exportCsv'])->name('admin.attendance.export');
+
+Route::post('/admin/attendance/{id}/approve', [AdminAttendanceController::class, 'approve'])->name('attendance.approve');
+Route::post('/admin/attendance/{id}/reject', [AdminAttendanceController::class, 'reject'])->name('attendance.reject');

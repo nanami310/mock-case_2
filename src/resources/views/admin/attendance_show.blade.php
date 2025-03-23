@@ -33,30 +33,27 @@
         </div>
 
         <div class="form-group">
-    <label for="break_time">休憩</label>
-    @if($attendance->breaks && $attendance->breaks->isNotEmpty())
-        @foreach ($attendance->breaks as $index => $break)
-            <label for="breaks[{{ $index }}][start]">休憩{{ $index + 1 }}</label>
-            <input type="time" name="breaks[{{ $index }}][start]" value="{{ $break->start ? \Carbon\Carbon::parse($break->start)->format('H:i') : '00:00' }}" class="form-control" required>
-            @error("breaks.$index.start")
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-            <label for="breaks[{{ $index }}][end]">～</label>
-            <input type="time" name="breaks[{{ $index }}][end]" value="{{ $break->end ? \Carbon\Carbon::parse($break->end)->format('H:i') : '00:00' }}" class="form-control" required>
-            @error("breaks.$index.end")
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        @endforeach
-    @else
-        <label for="breaks[0][start]">休憩1</label>
-        <input type="time" name="breaks[0][start]" value="00:00" class="form-control" required>
-        <label for="breaks[0][end]">～</label>
-        <input type="time" name="breaks[0][end]" value="00:00" class="form-control" required>
-    @endif
-</div>
-
-
-
+            <label for="break_time">休憩</label>
+            @if($attendance->breaks && $attendance->breaks->isNotEmpty())
+                @foreach ($attendance->breaks as $index => $break)
+                    <label for="breaks[{{ $index }}][start]">休憩{{ $index + 1 }}</label>
+                    <input type="time" name="breaks[{{ $index }}][start]" value="{{ $break->start ? \Carbon\Carbon::parse($break->start)->format('H:i') : '00:00' }}" class="form-control" required>
+                    @error("breaks.$index.start")
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                    <label for="breaks[{{ $index }}][end]">～</label>
+                    <input type="time" name="breaks[{{ $index }}][end]" value="{{ $break->end ? \Carbon\Carbon::parse($break->end)->format('H:i') : '00:00' }}" class="form-control" required>
+                    @error("breaks.$index.end")
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                @endforeach
+            @else
+                <label for="breaks[0][start]">休憩1</label>
+                <input type="time" name="breaks[0][start]" value="00:00" class="form-control" required>
+                <label for="breaks[0][end]">～</label>
+                <input type="time" name="breaks[0][end]" value="00:00" class="form-control" required>
+            @endif
+        </div>
 
         <div class="form-group">
             <label for="remarks">備考</label>
@@ -68,5 +65,38 @@
 
         <button type="submit" class="btn btn-primary">修正</button>
     </form>
+
+    <hr>
+
+    <!-- 承認・拒否ボタン -->
+    <h2>申請の承認/拒否</h2>
+    <form action="{{ route('attendance.approve', $attendance->id) }}" method="POST" style="display:inline;">
+        @csrf
+        <button type="submit" class="btn btn-success">承認</button>
+    </form>
+
+    <form action="{{ route('attendance.reject', $attendance->id) }}" method="POST" style="display:inline;">
+        @csrf
+        <button type="submit" class="btn btn-danger">拒否</button>
+    </form>
+
+    <!-- メッセージ表示 -->
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 </div>
 @endsection

@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\AttendanceStatus;
 use Carbon\Carbon;
 use App\Http\Requests\AttendanceRequest;
 
@@ -174,40 +175,141 @@ public function returnFromBreak(Request $request)
     $breakTimes = $attendance->breaks; // 休憩時間を取得
     return view('attendance.show', compact('attendance', 'breakTimes')); // $breakTimesを追加
 }
-    
-public function update(AttendanceRequest $request, $id)
+
+public function update(Request $request, $id)
+{
+    // バリデーション
+    $request->validate([
+        'check_in' => 'required|date_format:H:i',
+        'check_out' => 'required|date_format:H:i',
+        'remarks' => 'required|string',
+        'breaks.*.start' => 'required|date_format:H:i',
+        'breaks.*.end' => 'required|date_format:H:i',
+    ]);
+
+    // AttendancesTableから情報を取得
+    $attendance = Attendance::findOrFail($id);
+    $breakTimes = BreakTime::where('attendance_id', $id)->get();
+
+    // AttendanceStatus を新規作成
+    $attendanceStatus = new AttendanceStatus();
+    $attendanceStatus->attendance_id = $attendance->id; // 勤怠IDを設定
+    $attendanceStatus->check_in = $request->check_in; // フォームからのチェックイン
+    $attendanceStatus->check_out = $request->check_out; // フォームからのチェックアウト
+    $attendanceStatus->remarks = $request->remarks; // フォームからの備考
+    $attendanceStatus->status = 'pending'; // 初期ステータスを 'pending' に設定
+    $attendanceStatus->save();
+
+    // 休憩時間の保存
+    foreach ($request->breaks as $break) {
+        $breakTime = new BreakTime();
+        $breakTime->attendance_id = $attendance->id; // 元の勤怠IDを設定
+        $breakTime->start = $break['start'];
+        $breakTime->end = $break['end'];
+        $breakTime->save();
+    }
+
+    // JSONレスポンスを返す
+    return response()->json(['message' => '勤怠情報が保存されました。'], 200);
+}
+
+public function requestChange(Request $request, $id)
+{
+    // バリデーション
+    $request->validate([
+        'attendance_id' => 'required|exists:attendances,id',
+        'check_in' => 'nullable|date_format:H:i',
+        'check_out' => 'nullable|date_format:H:i',
+        'new_break_start' => 'nullable|date_format:H:i',
+        'new_break_end' => 'nullable|date_format:H:i',
+        'remarks' => 'nullable|string',
+    ]);
+
+    // 勤怠情報を取得
+    $attendance = Attendance::findOrFail($request->attendance_id);
+
+    // AttendanceStatus を新規作成
+    $attendanceStatus = new AttendanceStatus();
+    $attendanceStatus->attendance_id = $attendance->id;
+    $attendanceStatus->user_id = auth()->id();
+    $attendanceStatus->check_in = $request->check_in;
+    $attendanceStatus->check_out = $request->check_out;
+    $attendanceStatus->remarks = $request->remarks;
+    $attendanceStatus->status = 'pending';
+    $attendanceStatus->save();
+
+    // 新しい休憩時間の保存
+    if ($request->new_break_start && $request->new_break_end) {
+        $breakTime = new BreakTime();
+        $breakTime->attendance_id = $attendance->id;
+        $breakTime->start = \Carbon\Carbon::createFromFormat('H:i', $request->new_break_start)->setDate(now()->year, now()->month, now()->day);
+        $breakTime->end = \Carbon\Carbon::createFromFormat('H:i', $request->new_break_end)->setDate(now()->year, now()->month, now()->day);
+        $breakTime->save();
+    }
+
+    return redirect()->back()->with('message', '勤怠時間の変更申請が送信されました。');
+}
+
+public function requestList()
+{
+    $user = auth()->user(); // 現在のユーザーを取得
+
+    // 承認待ちの申請を取得
+    $pendingRequests = AttendanceStatus::where('user_id', $user->id)
+                                       ->where('status', 'pending')
+                                       ->get();
+
+    // 承認済みの申請を取得
+    $approvedRequests = AttendanceStatus::where('user_id', $user->id)
+                                        ->where('status', 'approved')
+                                        ->get();
+
+    return view('attendance.request_list', compact('pendingRequests', 'approvedRequests'));
+}
+
+public function requestBreakTimeChange(Request $request)
+{
+    // バリデーション
+    $request->validate([
+        'attendance_id' => 'required|exists:attendances,id', // 勤怠IDが必要
+        'start' => 'required|date_format:H:i', // 休憩開始時間
+        'end' => 'nullable|date_format:H:i', // 休憩終了時間
+        'remarks' => 'nullable|string', // 備考
+    ]);
+
+    // 勤怠情報を取得
+    $attendance = Attendance::findOrFail($request->attendance_id);
+
+    // BreakTime を新規作成
+    $breakTime = new BreakTime();
+    $breakTime->attendance_id = $attendance->id; // 勤怠IDを設定
+    $breakTime->start = \Carbon\Carbon::createFromFormat('H:i', $request->start)->setDate(now()->year, now()->month, now()->day); // 現在の日付を設定
+    $breakTime->end = $request->end ? \Carbon\Carbon::createFromFormat('H:i', $request->end)->setDate(now()->year, now()->month, now()->day) : null; // 終了時間を設定
+    $breakTime->remarks = $request->remarks; // 備考を設定
+    $breakTime->save();
+
+    return redirect()->back()->with('message', '休憩時間の変更申請が送信されました。');
+}
+
+public function breakTimeRequestList()
+{
+    $user = auth()->user(); // 現在のユーザーを取得
+
+    // 承認待ちの休憩時間申請を取得
+    $pendingBreakRequests = BreakTime::whereHas('attendance', function ($query) use ($user) {
+        $query->where('user_id', $user->id);
+    })->where('status', 'pending')->get();
+
+    return view('attendance.break_time_request_list', compact('pendingBreakRequests'));
+}
+
+public function showAttendanceDetail($id)
 {
     $attendance = Attendance::findOrFail($id);
-    
-    // ユーザーの確認
-    if ($attendance->user_id !== auth()->id()) {
-        abort(403);
-    }
+    $breakTimes = BreakTime::where('attendance_id', $attendance->id)->get(); // 休憩時間を取得
 
-    // ステータスが 'pending' の場合は更新できない
-    if ($attendance->status === 'pending') {
-        return redirect()->route('attendance.show', $attendance->id)->with('error', '承認待ちのため修正はできません。');
-    }
-
-    // 勤怠情報の更新
-    $attendance->check_in = $request->input('check_in');
-    $attendance->check_out = $request->input('check_out');
-    $attendance->remarks = $request->input('remarks');
-
-    // 休憩時間の更新
-    $attendance->breaks()->delete(); // 既存の休憩を削除
-    foreach ($request->input('breaks') as $break) {
-        $attendance->breaks()->create([
-            'start' => $break['start'],
-            'end' => $break['end'],
-        ]);
-    }
-
-    // ステータスを 'pending' に変更して修正申請を行う
-    $attendance->status = 'pending';
-    $attendance->save();
-
-    return redirect()->route('attendance.show', $attendance->id)->with('message', '修正申請が完了しました。');
+    return view('attendance.detail', compact('attendance', 'breakTimes'));
 }
+
 
 }

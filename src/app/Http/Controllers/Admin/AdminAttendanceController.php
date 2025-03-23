@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use App\Models\AttendanceStatus; // AttendanceStatusモデルのインポート
 
 class AdminAttendanceController extends Controller
 {
@@ -21,46 +22,121 @@ class AdminAttendanceController extends Controller
     return view('admin.attendance_show', compact('attendance'));
 }
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'check_in' => 'nullable|date_format:H:i',
-            'check_out' => 'nullable|date_format:H:i',
-            'breaks.*.start' => 'nullable|date_format:H:i', // 修正: 配列形式に対応
-            'breaks.*.end' => 'nullable|date_format:H:i',
-            'remarks' => 'nullable|string|max:255',
-        ]);
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'check_in' => 'nullable|date_format:H:i',
+        'check_out' => 'nullable|date_format:H:i',
+        'breaks.*.start' => 'nullable|date_format:H:i',
+        'breaks.*.end' => 'nullable|date_format:H:i',
+    ]);
 
-        $attendance = Attendance::findOrFail($id);
+    $attendance = Attendance::findOrFail($id);
 
-        // データを更新
-        $attendance->check_in = $request->input('check_in');
-        $attendance->check_out = $request->input('check_out');
+    // 現在の日付を取得
+    $date = now()->format('Y-m-d'); // 現在の日付を取得または適切な日付を指定
 
-        // 日付を取得 (例: 2025-03-09)
-        $date = $attendance->date; // もしくは適切な日付を指定する
+    // check_in と check_out を適切な形式で設定
+    if ($request->input('check_in')) {
+        $attendance->check_in = $date . ' ' . $request->input('check_in') . ':00';
+    }
+    if ($request->input('check_out')) {
+        $attendance->check_out = $date . ' ' . $request->input('check_out') . ':00';
+    }
 
-        // 休憩データの更新処理
-        if ($request->has('breaks') && is_array($request->input('breaks'))) {
-            $attendance->breaks()->delete(); // 既存の休憩データを削除
-            foreach ($request->input('breaks') as $break) {
-                // DATETIMEフォーマットに変換
-                $start = $date . ' ' . $break['start'] . ':00'; // 秒を追加
-                $end = $date . ' ' . $break['end'] . ':00'; // 秒を追加
-                
-                // 休憩時間を作成
-                $attendance->breaks()->create([
-                    'start' => $start,
-                    'end' => $end,
-                ]);
+    if ($request->has('breaks') && is_array($request->input('breaks'))) {
+        $attendance->breaks()->delete();
+        foreach ($request->input('breaks') as $break) {
+            $start = $date . ' ' . $break['start'] . ':00';
+            $end = $date . ' ' . $break['end'] . ':00';
+            
+            $attendance->breaks()->create([
+                'start' => $start,
+                'end' => $end,
+            ]);
+        }
+    }
+
+    $attendance->save();
+
+    return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が更新されました。');
+}
+
+public function approve($id)
+{
+    // AttendanceStatusを取得
+    $attendanceStatus = AttendanceStatus::where('attendance_id', $id)->first();
+
+    // AttendanceStatusが存在するか確認
+    if ($attendanceStatus) {
+        // ステータスをapprovedに更新
+        $attendanceStatus->status = 'approved';
+        $attendanceStatus->save();
+
+        // AttendancesTableを更新
+        $attendance = Attendance::where('id', $id)->first();
+        if ($attendance) {
+            // 現在の日付を取得
+            $date = now()->format('Y-m-d');
+
+            // check_inとcheck_outをtimestamp形式に変換
+            if ($attendanceStatus->check_in) {
+                $attendance->check_in = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_in)->setDateFrom($date);
             }
+
+            if ($attendanceStatus->check_out) {
+                $attendance->check_out = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_out)->setDateFrom($date);
+            }
+
+            // 休憩時間を更新
+            if ($attendanceStatus->break_start) {
+                $attendance->break_start = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_start)->setDateFrom($date);
+            }
+
+            if ($attendanceStatus->break_end) {
+                $attendance->break_end = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_end)->setDateFrom($date);
+            }
+
+            $attendance->save();
         }
 
-        $attendance->remarks = $request->input('remarks');
-
-        $attendance->save(); // 保存
-
-        // 勤怠一覧画面にリダイレクト
-        return redirect()->route('attendance.list')->with('success', '勤怠情報が更新されました。');
+        return redirect()->back()->with('success', 'ステータスが承認されました。');
+    } else {
+        return redirect()->back()->with('error', '関連するステータスが見つかりません。');
     }
+}
+
+
+public function reject($id)
+{
+    $attendance = Attendance::findOrFail($id);
+    
+    // ステータスを拒否に変更
+    $attendance->status = 'rejected';
+    $attendance->save();
+
+    // リダイレクトまたはメッセージの表示
+    return redirect()->back()->with('success', '拒否されました。');
+}
+
+public function approveBreakTime($id)
+{
+    // BreakTimeを取得
+    $breakTime = BreakTime::findOrFail($id);
+
+    // 承認処理（必要に応じてステータスを変更するなど）
+    $breakTime->status = 'approved'; // ステータスを承認に設定
+    $breakTime->save();
+
+    // 休憩時間をAttendanceStatusに更新
+    $attendanceStatus = AttendanceStatus::where('attendance_id', $breakTime->attendance_id)->first();
+    if ($attendanceStatus) {
+        $attendanceStatus->break_start = $breakTime->start->format('H:i:s');
+        $attendanceStatus->break_end = $breakTime->end->format('H:i:s');
+        $attendanceStatus->save();
+    }
+
+    return redirect()->back()->with('success', '休憩時間が承認されました。');
+}
+
 }
