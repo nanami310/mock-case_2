@@ -14,7 +14,7 @@
                 <ul>
                     <li><a href="{{ url('/attendance') }}">勤怠</a></li>
                     <li><a href="{{ url('/attendance/list') }}">勤怠一覧</a></li>
-                    <li><a href="{{ url('/stamp_correction_request/list') }}">申請</a></li>
+                    <li><a href="{{ route('user.attendance.requests') }}" class="btn btn-info">申請</a></li>
                     <li>
                         <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                             @csrf

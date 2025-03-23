@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\AttendanceStatus; // AttendanceStatusモデルのインポート
+use Carbon\Carbon;
 
 class AdminAttendanceController extends Controller
 {
@@ -137,6 +138,31 @@ public function approveBreakTime($id)
     }
 
     return redirect()->back()->with('success', '休憩時間が承認されました。');
+}
+
+public function listRequests()
+{
+    // 承認待ちの申請
+    $pendingRequests = AttendanceStatus::with('user', 'attendance')
+        ->where('status', 'pending')
+        ->get()
+        ->map(function ($request) {
+            // created_atをCarbonオブジェクトに変換
+            $request->created_at = Carbon::parse($request->created_at);
+            return $request;
+        });
+
+    // 承認済みの申請
+    $approvedRequests = AttendanceStatus::with('user', 'attendance')
+        ->where('status', 'approved')
+        ->get()
+        ->map(function ($request) {
+            // created_atをCarbonオブジェクトに変換
+            $request->created_at = Carbon::parse($request->created_at);
+            return $request;
+        });
+
+    return view('admin.attendance_request_list', compact('pendingRequests', 'approvedRequests'));
 }
 
 }

@@ -257,12 +257,20 @@ public function requestList()
     // 承認待ちの申請を取得
     $pendingRequests = AttendanceStatus::where('user_id', $user->id)
                                        ->where('status', 'pending')
-                                       ->get();
+                                       ->get()
+                                       ->map(function ($request) {
+                                           $request->created_at = Carbon::parse($request->created_at);
+                                           return $request;
+                                       });
 
     // 承認済みの申請を取得
     $approvedRequests = AttendanceStatus::where('user_id', $user->id)
                                         ->where('status', 'approved')
-                                        ->get();
+                                        ->get()
+                                        ->map(function ($request) {
+                                            $request->created_at = Carbon::parse($request->created_at);
+                                            return $request;
+                                        });
 
     return view('attendance.request_list', compact('pendingRequests', 'approvedRequests'));
 }

@@ -1,16 +1,23 @@
 @extends('layouts.adminheader')
 
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
 @section('content')
 <div class="container">
-    <h1>申請一覧（管理者）</h1>
+    <h1>申請一覧(管理者)
+    </h1>
 
     <!-- タブ -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">承認待ち</a>
+            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">
+承認待ちの申請</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認済み</a>
+            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認
+済みの申請</a>
         </li>
     </ul>
 
@@ -24,9 +31,10 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>名前</th>
-                            <th>対象日時</th>
-                            <th>申請理由</th>
+                            <th>ユーザー名</th>
+                            <th>チェックイン</th>
+                            <th>チェックアウト</th>
+                            <th>備考</th>
                             <th>申請日時</th>
                             <th>詳細</th>
                         </tr>
@@ -34,14 +42,13 @@
                     <tbody>
                         @foreach($pendingRequests as $request)
                             <tr>
-                                <td>承認待ち</td>
-                                <td>{{ $request->user->name ?? '不明' }}</td>
-                                <td>{{ optional($request->attendance)->date->format('Y年/m月/d日') ?? '不明' }}</td>
+                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->user ? $request->user->name : '不明' }}</td>
+                                <td>{{ $request->check_in }}</td>
+                                <td>{{ $request->check_out }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年/m月/d日') }}</td>
-                                <td>
-                                    <a href="{{ route('admin.attendance.approve', $request->id) }}" class="btn btn-info">詳細</a>
-                                </td>
+                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -58,9 +65,10 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>名前</th>
-                            <th>対象日時</th>
-                            <th>申請理由</th>
+                            <th>ユーザー名</th>
+                            <th>チェックイン</th>
+                            <th>チェックアウト</th>
+                            <th>備考</th>
                             <th>申請日時</th>
                             <th>詳細</th>
                         </tr>
@@ -68,14 +76,13 @@
                     <tbody>
                         @foreach($approvedRequests as $request)
                             <tr>
-                                <td>承認済み</td>
-                                <td>{{ $request->user->name ?? '不明' }}</td>
-                                <td>{{ optional($request->attendance)->date->format('Y年/m月/d日') ?? '不明' }}</td>
+                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->user ? $request->user->name : '不明' }}</td>
+                                <td>{{ $request->check_in }}</td>
+                                <td>{{ $request->check_out }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年/m月/d日') }}</td>
-                                <td>
-                                    <a href="{{ route('admin.attendance.approve', $request->id) }}" class="btn btn-info">詳細</a>
-                                </td>
+                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
                     </tbody>

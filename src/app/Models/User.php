@@ -47,5 +47,9 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
+    public function isAdmin()
+    {
+        return true; // すべてのユーザーを管理者扱い
+    }
     
 }

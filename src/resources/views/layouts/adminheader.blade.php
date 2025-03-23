@@ -12,7 +12,7 @@
             @if(Auth::check())
                 <a href="{{ route('admin.attendance.list') }}">勤怠一覧</a>
                 <a href="/admin/staff/list">スタッフ一覧</a>
-                <a href="{{ route('admin.attendance.requests') }}">申請一覧</a>
+                <a href="{{ route('admin.attendance.requests') }}" class="btn btn-info">申請一覧</a>
                 <form action="{{ route('admin.logout') }}" method="POST" style="display:inline;">
                     @csrf
                     <button type="submit" style="background:none; border:none; color:blue; cursor:pointer;">ログアウト</button>
