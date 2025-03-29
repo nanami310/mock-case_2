@@ -79,3 +79,6 @@ Route::middleware(['auth'])->group(function () {
 attendance.approve');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/attendance', [AdminAttendanceController::class, 'adminAttendanceIndex'])->name('admin.attendance.index');
+});

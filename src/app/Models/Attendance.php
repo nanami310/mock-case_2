@@ -18,9 +18,15 @@ class Attendance extends Model
         'total_hours',
     ];
 
+    protected $casts = [
+        'check_in' => 'datetime',
+        'check_out' => 'datetime',
+        'date' => 'date',
+    ];
+
     public function hasCheckedInToday()
     {
-        return $this->status === 'on_duty'; // ステータスを 'on_duty' に変更
+        return $this->status === 'on_duty';
     }
 
     public function breaks()
@@ -33,7 +39,7 @@ class Attendance extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function status()
+    public function attendanceStatus()
     {
         return $this->hasOne(AttendanceStatus::class);
     }

@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class AttendanceStatus extends Model
 {
-    protected $fillable = ['attendance_id', 'status'];
+    use HasFactory; // HasFactoryを追加
+
+    protected $fillable = ['attendance_id', 'status', 'user_id']; // user_idを追加
 
     public function attendance()
     {
@@ -15,7 +17,7 @@ class AttendanceStatus extends Model
     }
 
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    {
+        return $this->belongsTo(User::class);
+    }
 }

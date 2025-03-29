@@ -48,7 +48,7 @@
                                 <td>{{ $request->check_out }}</td>
                                 <td>{{ $request->remarks }}</td>
                                 <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
-                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
+                                <td><a href="{{ route('admin.attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -82,7 +82,7 @@
                                 <td>{{ $request->check_out }}</td>
                                 <td>{{ $request->remarks }}</td>
                                 <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
-                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
+                                <td><a href="{{ route('admin.attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
                     </tbody>

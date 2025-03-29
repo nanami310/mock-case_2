@@ -11,6 +11,11 @@ class BreakTime extends Model
 
     protected $fillable = ['attendance_id', 'start', 'end'];
 
+    protected $casts = [
+        'start' => 'datetime',
+        'end' => 'datetime',
+    ];
+
     public function attendance()
     {
         return $this->belongsTo(Attendance::class);
