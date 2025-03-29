@@ -43,4 +43,14 @@ class Attendance extends Model
     {
         return $this->hasOne(AttendanceStatus::class);
     }
+
+    public function status()
+    {
+        return $this->hasOne(AttendanceStatus::class);
+    }
+
+    public function breakTimes()
+    {
+        return $this->hasMany(BreakTime::class);
+    }
 }

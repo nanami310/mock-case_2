@@ -20,4 +20,9 @@ class BreakTime extends Model
     {
         return $this->belongsTo(Attendance::class);
     }
+    
+    public function attendanceStatus()
+    {
+        return $this->belongsTo(AttendanceStatus::class, 'attendance_id');
+    }
 }

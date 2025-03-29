@@ -82,3 +82,6 @@ attendance.approve');
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/attendance', [AdminAttendanceController::class, 'adminAttendanceIndex'])->name('admin.attendance.index');
 });
+
+// 修正申請承認画面
+Route::get('/attendance/correction/{id}/approve', [AdminAttendanceController::class, 'showCorrectionRequest'])->name('admin.attendance.correction.approve');

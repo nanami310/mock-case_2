@@ -73,39 +73,67 @@ public function update(Request $request, $id)
     return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が更新されました。');
 }
 
+public function showCorrectionRequest($id)
+{
+    $attendanceStatus = AttendanceStatus::with('user')->where('attendance_id', $id)->firstOrFail();
+    return view('admin.attendance_correction_approve', compact('attendanceStatus'));
+}
 
 public function approve($id)
 {
-    $attendanceStatus = AttendanceStatus::where('attendance_id', $id)->first();
+    try {
+        // AttendanceStatusを取得
+        $attendanceStatus = AttendanceStatus::where('attendance_id', $id)->first();
 
-    if ($attendanceStatus) {
-        $attendanceStatus->status = 'approved';
-        $attendanceStatus->save();
+        if ($attendanceStatus) {
+            // ステータスを承認済みに更新
+            $attendanceStatus->status = 'approved';
+            $attendanceStatus->save();
 
-        $attendance = Attendance::findOrFail($id);
-        $date = now()->format('Y-m-d');
+            // Attendanceを取得
+            $attendance = Attendance::findOrFail($id);
+            $date = now()->format('Y-m-d');
 
-        if ($attendanceStatus->check_in) {
-            $attendance->check_in = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_in)->format('H:i:s');
+            // 出勤時間を更新
+            if ($attendanceStatus->check_in) {
+                $attendance->check_in = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_in)->format('H:i:s');
+            }
+
+            // 退勤時間を更新
+            if ($attendanceStatus->check_out) {
+                $attendance->check_out = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_out)->format('H:i:s');
+            }
+
+            // Attendanceを保存
+            $attendance->save();
+
+            // BreakTimeの作成または更新
+            $breakTime = BreakTime::where('attendance_id', $attendance->id)->first();
+            
+            // 休憩開始時刻と終了時刻を設定
+            $breakStart = $attendanceStatus->break_start ? $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_start)->format('H:i:s') : null;
+            $breakEnd = $attendanceStatus->break_end ? $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_end)->format('H:i:s') : null;
+
+            if ($breakTime) {
+                // 既存の休憩時間を更新
+                $breakTime->start = $breakStart;
+                $breakTime->end = $breakEnd;
+                $breakTime->save();
+            } else {
+                // 新しい休憩時間を作成
+                BreakTime::create([
+                    'attendance_id' => $attendance->id,
+                    'start' => $breakStart,
+                    'end' => $breakEnd,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'ステータスが承認されました。');
+        } else {
+            return redirect()->back()->with('error', '関連するステータスが見つかりません。');
         }
-
-        if ($attendanceStatus->check_out) {
-            $attendance->check_out = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_out)->format('H:i:s');
-        }
-
-        // 休憩時間を更新
-        if ($attendanceStatus->break_start) {
-            $attendance->break_start = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_start)->format('H:i:s');
-        }
-
-        if ($attendanceStatus->break_end) {
-            $attendance->break_end = $date . ' ' . \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->break_end)->format('H:i:s');
-        }
-
-        $attendance->save();
-        return redirect()->back()->with('success', 'ステータスが承認されました。');
-    } else {
-        return redirect()->back()->with('error', '関連するステータスが見つかりません。');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
     }
 }
 

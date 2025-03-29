@@ -205,37 +205,41 @@ public function checkOut(Request $request)
         'breakTimes' => $attendance->breaks,
     ]);
 }
-    public function requestChange(Request $request, $id)
-    {
-        $request->validate([
-            'attendance_id' => 'required|exists:attendances,id',
-            'check_in' => 'nullable|date_format:H:i',
-            'check_out' => 'nullable|date_format:H:i',
-            'new_break_start' => 'nullable|date_format:H:i',
-            'new_break_end' => 'nullable|date_format:H:i',
-            'remarks' => 'nullable|string',
-        ]);
 
-        $attendance = Attendance::findOrFail($request->attendance_id);
-        $attendanceStatus = new AttendanceStatus();
-        $attendanceStatus->attendance_id = $attendance->id;
-        $attendanceStatus->user_id = auth()->id();
-        $attendanceStatus->check_in = $request->check_in;
-        $attendanceStatus->check_out = $request->check_out;
-        $attendanceStatus->remarks = $request->remarks;
-        $attendanceStatus->status = 'pending';
-        $attendanceStatus->save();
+public function requestChange(Request $request)
+{
+    $request->validate([
+        'attendance_id' => 'required|exists:attendances,id',
+        'check_in' => 'nullable|date_format:H:i',
+        'check_out' => 'nullable|date_format:H:i',
+        'breaks.*.start' => 'nullable|date_format:H:i',
+        'breaks.*.end' => 'nullable|date_format:H:i',
+        'remarks' => 'nullable|string',
+    ]);
 
-        if ($request->new_break_start && $request->new_break_end) {
-            $breakTime = new BreakTime();
-            $breakTime->attendance_id = $attendance->id;
-            $breakTime->start = \Carbon\Carbon::createFromFormat('H:i', $request->new_break_start)->setDate(now()->year, now()->month, now()->day);
-            $breakTime->end = \Carbon\Carbon::createFromFormat('H:i', $request->new_break_end)->setDate(now()->year, now()->month, now()->day);
-            $breakTime->save();
+    $attendance = Attendance::findOrFail($request->attendance_id);
+    $attendanceStatus = new AttendanceStatus();
+    $attendanceStatus->attendance_id = $attendance->id;
+    $attendanceStatus->user_id = auth()->id();
+    $attendanceStatus->check_in = $request->check_in;
+    $attendanceStatus->check_out = $request->check_out;
+    
+    // 休憩時間の処理
+    if ($request->breaks) {
+        foreach ($request->breaks as $break) {
+            if (!empty($break['start']) && !empty($break['end'])) {
+                $attendanceStatus->break_start = $break['start']; // 休憩開始時間を保存
+                $attendanceStatus->break_end = $break['end']; // 休憩終了時間を保存
+            }
         }
-
-        return redirect()->back()->with('message', '勤怠時間の変更申請が送信されました。');
     }
+
+    $attendanceStatus->remarks = $request->remarks;
+    $attendanceStatus->status = 'pending';
+    $attendanceStatus->save();
+
+    return redirect()->back()->with('message', '勤怠時間および休憩時間の変更申請が送信されました。');
+}
 
     public function requestList()
     {
@@ -257,26 +261,6 @@ public function checkOut(Request $request)
                                             });
 
         return view('attendance.request_list', compact('pendingRequests', 'approvedRequests'));
-    }
-
-    public function requestBreakTimeChange(Request $request)
-    {
-        $request->validate([
-            'attendance_id' => 'required|exists:attendances,id',
-            'start' => 'required|date_format:H:i',
-            'end' => 'nullable|date_format:H:i',
-            'remarks' => 'nullable|string',
-        ]);
-
-        $attendance = Attendance::findOrFail($request->attendance_id);
-        $breakTime = new BreakTime();
-        $breakTime->attendance_id = $attendance->id;
-        $breakTime->start = \Carbon\Carbon::createFromFormat('H:i', $request->start)->setDate(now()->year, now()->month, now()->day);
-        $breakTime->end = $request->end ? \Carbon\Carbon::createFromFormat('H:i', $request->end)->setDate(now()->year, now()->month, now()->day) : null;
-        $breakTime->remarks = $request->remarks;
-        $breakTime->save();
-
-        return redirect()->back()->with('message', '休憩時間の変更申請が送信されました。');
     }
 
     public function breakTimeRequestList()

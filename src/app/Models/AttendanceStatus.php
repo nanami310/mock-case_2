@@ -20,4 +20,9 @@ class AttendanceStatus extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function breaks()
+    {
+        return $this->hasMany(BreakTime::class, 'attendance_id');
+    }
 }

@@ -33,28 +33,32 @@
     @enderror
 </div>
 
-        <div class="form-group">
-            <label for="break_time">休憩時間</label>
-            @if($breakTimes->isNotEmpty())
-                @foreach ($breakTimes as $index => $break)
-                    <div class="form-group">
-                        <label>休憩開始時間</label>
-                        <input type="time" name="breaks[{{ $index }}][start]" value="{{ old("breaks.$index.start", $break->start ? $break->start->format('H:i') : '00:00') }}" class="form-control">
-                        @error("breaks.$index.start")
-                            <div class="text-danger">{{ $message }}</div>
-                        @enderror
+<div class="form-group">
+    <label for="break_time">休憩時間</label>
+    @if($breakTimes->isNotEmpty())
+        @foreach ($breakTimes as $index => $break)
+            <div class="form-group">
+                <label>休憩開始時間</label>
+                <input type="time" name="breaks[{{ $index }}][start]" 
+                       value="{{ old("breaks.$index.start", $break->start ? $break->start->format('H:i') : '') }}" 
+                       class="form-control">
+                @error("breaks.$index.start")
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
 
-                        <label>休憩終了時間</label>
-                        <input type="time" name="breaks[{{ $index }}][end]" value="{{ old("breaks.$index.end", $break->end ? $break->end->format('H:i') : '00:00') }}" class="form-control">
-                        @error("breaks.$index.end")
-                            <div class="text-danger">{{ $message }}</div>
-                        @enderror
-                    </div>
-                @endforeach
-            @else
-                <p>勤怠情報はありません</p>
-            @endif
-        </div>
+                <label>休憩終了時間</label>
+                <input type="time" name="breaks[{{ $index }}][end]" 
+                       value="{{ old("breaks.$index.end", $break->end ? $break->end->format('H:i') : '') }}" 
+                       class="form-control">
+                @error("breaks.$index.end")
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
+        @endforeach
+    @else
+        <p>勤怠情報はありません</p>
+    @endif
+</div>
 
         <div class="form-group">
             <label for="remarks">備考</label>
