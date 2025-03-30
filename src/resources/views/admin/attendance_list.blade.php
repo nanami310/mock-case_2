@@ -1,11 +1,12 @@
 @extends('layouts.adminheader')
 @section('content')
 <div class="attendance-list">
-    <h1>勤怠一覧（管理者）</h1>
+    @foreach ($attendanceRecords as $record)
+    <h1>{{ $currentYear }}年 {{ $currentMonth }}月 {{ $currentDay }}日の勤怠</h1>
 
     <div class="date-selector">
         <button onclick="changeDay(-1)">← 前日</button>
-        <span id="current-date">{{ $currentYear }}年 {{ $currentMonth }}月 {{ $currentDay }}日</span>
+        <span id="current-date">{{ \Carbon\Carbon::parse($record->date)->format('Y/m/d') }}</span>
         <button onclick="changeDay(1)">翌日 →</button>
         <input type="date" id="date-picker" value="{{ $currentYear }}-{{ str_pad($currentMonth, 2, '0', STR_PAD_LEFT) }}-{{ str_pad($currentDay, 2, '0', STR_PAD_LEFT) }}" onchange="selectDate()">
     </div>
@@ -14,41 +15,49 @@
         <thead>
             <tr>
                 <th>名前</th>
-                <th>日付</th>
-                <th>出勤時間</th>
-                <th>退勤時間</th>
-                <th>休憩時間</th>
+                <th>出勤</th>
+                <th>退勤</th>
+                <th>休憩</th>
                 <th>合計</th>
                 <th>詳細</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($attendanceRecords as $record)
+          
                 <tr>
                     <td>{{ $record->user->name }}</td>
-                    <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td>
                     <td>{{ $record->check_in ? \Carbon\Carbon::parse($record->check_in)->format('H:i') : '' }}</td>
                     <td>{{ $record->check_out ? \Carbon\Carbon::parse($record->check_out)->format('H:i') : '' }}</td>
                     <td>
-                        @php
-                            $totalBreakTime = $record->breaks->sum(function($break) {
-                                return $break->end ? \Carbon\Carbon::parse($break->end)->diffInMinutes(\Carbon\Carbon::parse($break->start)) : 0;
-                            });
-                        @endphp
-                        {{ $totalBreakTime }} 分
-                    </td>
-                    <td>
-                        @php
-                            if ($record->check_in && $record->check_out) {
-                                $checkIn = \Carbon\Carbon::parse($record->check_in);
-                                $checkOut = \Carbon\Carbon::parse($record->check_out);
-                                $totalHours = $checkOut->diffInMinutes($checkIn) - $totalBreakTime;
-                                echo floor($totalHours / 60) . ' 時間 ' . ($totalHours % 60) . ' 分';
-                            } else {
-                                echo '';
-                            }
-                        @endphp
-                    </td>
+    @php
+        $totalBreakTime = $record->breaks->sum(function($break) {
+            return $break->end ? \Carbon\Carbon::parse($break->end)->diffInMinutes(\Carbon\Carbon::parse($break->start)) : 0;
+        });
+
+        // 時間と分に変換
+        $breakHours = floor($totalBreakTime / 60);
+        $breakMinutes = $totalBreakTime % 60;
+    @endphp
+    {{ sprintf('%02d:%02d', $breakHours, $breakMinutes) }} 
+</td>
+<td>
+    @php
+        if ($record->check_in && $record->check_out) {
+            $checkIn = \Carbon\Carbon::parse($record->check_in);
+            $checkOut = \Carbon\Carbon::parse($record->check_out);
+            $totalHours = $checkOut->diffInMinutes($checkIn) - $totalBreakTime;
+
+            // 時間と分を計算
+            $hours = floor($totalHours / 60);
+            $minutes = $totalHours % 60;
+
+            // 00:00形式で表示
+            echo sprintf('%02d:%02d', $hours, $minutes);
+        } else {
+            echo '';
+        }
+    @endphp
+</td>
                     <td>
                         <a href="{{ route('admin.attendance.show', $record->id) }}">詳細</a>
                     </td>
@@ -68,12 +77,19 @@
         const currentDate = document.getElementById('date-picker').value;
         const date = new Date(currentDate);
         date.setDate(date.getDate() + direction);
-        window.location.href = '/admin/attendance/list?year=' + date.getFullYear() + '&month=' + (date.getMonth() + 1) + '&day=' + date.getDate();
+
+        // 日付を2桁の形式に整形
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        window.location.href = '/admin/attendance/list?year=' + year + '&month=' + month + '&day=' + day;
     }
 
     function selectDate() {
         const selectedDate = document.getElementById('date-picker').value;
-        window.location.href = '/admin/attendance/list?year=' + selectedDate.split('-')[0] + '&month=' + selectedDate.split('-')[1] + '&day=' + selectedDate.split('-')[2];
+        const [year, month, day] = selectedDate.split('-');
+        window.location.href = '/admin/attendance/list?year=' + year + '&month=' + month + '&day=' + day;
     }
 </script>
 @endsection

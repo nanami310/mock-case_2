@@ -11,33 +11,51 @@ use App\Models\BreakTime;
 
 class AdminAttendanceController extends Controller
 {
-    public function adminAttendanceIndex()
+
+    public function adminAttendanceIndex(Request $request)
     {
-        return $this->index();
+        // URLから年、月、日を取得
+        $year = $request->input('year', now()->year);
+        $month = $request->input('month', now()->month);
+        $day = $request->input('day', now()->day);
+
+        // indexメソッドを呼び出す
+        return $this->index($year, $month, $day);
     }
 
-    public function index()
+    public function index($year, $month, $day)
     {
-        $attendanceRecords = Attendance::with('user')->get();
-        $currentYear = now()->year;
-        $currentMonth = now()->month;
-        $currentDay = now()->day;
+        // 指定された日付に基づいて出勤記録を取得
+        $currentDate = Carbon::createFromDate($year, $month, $day);
+        $attendanceRecords = Attendance::with('user')->whereDate('date', $currentDate)->get();
+
+        // 現在の日付を取得
+        $currentYear = $currentDate->year;
+        $currentMonth = $currentDate->month;
+        $currentDay = $currentDate->day;
 
         return view('admin.attendance_list', compact('attendanceRecords', 'currentYear', 'currentMonth', 'currentDay'));
     }
 
-    public function show($id)
+public function show($id, Request $request)
 {
-    // 出勤情報を取得し、関連する休憩情報もロード
-    $attendance = Attendance::with('breaks')->findOrFail($id);
-$breakTimes = $attendance->breaks; // breaksを取得
-    
-    
+    // 出勤情報を取得
+    $attendance = Attendance::with('breaks')->find($id);
 
-    // その後の処理はここに続く...
+    // 勤怠情報がない場合は新しいオブジェクトを作成
+    if (!$attendance) {
+        return redirect()->back()->with('error', '勤怠情報が見つかりません。');
+    }
+
+    // 日付を取得
+    $date = $request->input('date');
+    $attendance->date = $date; // 渡された日付を設定
+
+    $breakTimes = $attendance->breaks; // breaksを取得
+
     return view('admin.attendance_show', compact('attendance', 'breakTimes'));
 }
-
+    
 public function update(Request $request, $id)
 {
     // バリデーションの変更

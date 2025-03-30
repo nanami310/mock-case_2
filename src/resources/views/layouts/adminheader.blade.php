@@ -17,8 +17,6 @@
                     @csrf
                     <button type="submit" style="background:none; border:none; color:blue; cursor:pointer;">ログアウト</button>
                 </form>
-            @else
-                <a href="/admin/login">ログイン</a>
             @endif
         </div>
     </div>

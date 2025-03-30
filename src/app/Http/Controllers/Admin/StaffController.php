@@ -34,8 +34,9 @@ class StaffController extends Controller
     $previousMonth = $currentDate->copy()->subMonth();
     $nextMonth = $currentDate->copy()->addMonth();
 
-    // 勤怠情報の取得
-    $attendanceRecords = Attendance::where('user_id', $id)
+    // 勤怠情報の取得（ユーザー情報も一緒にロード）
+    $attendanceRecords = Attendance::with('user') // userリレーションをロード
+                                   ->where('user_id', $id)
                                    ->whereYear('date', $currentYear)
                                    ->whereMonth('date', $currentMonth)
                                    ->get();

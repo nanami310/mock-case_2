@@ -6,18 +6,17 @@
 
 @section('content')
 <div class="container">
-    <h1>申請一覧(管理者)
-    </h1>
+    <h1>申請一覧</h1>
 
     <!-- タブ -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">
-承認待ちの申請</a>
+承認待ち</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認
-済みの申請</a>
+済み</a>
         </li>
     </ul>
 
@@ -31,10 +30,10 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>ユーザー名</th>
+                            <th>名前</th>
                             <th>チェックイン</th>
                             <th>チェックアウト</th>
-                            <th>備考</th>
+                            <th>申請理由</th>
                             <th>申請日時</th>
                             <th>詳細</th>
                         </tr>
@@ -65,10 +64,10 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>ユーザー名</th>
+                            <th>名前</th>
                             <th>チェックイン</th>
                             <th>チェックアウト</th>
-                            <th>備考</th>
+                            <th>申請理由</th>
                             <th>申請日時</th>
                             <th>詳細</th>
                         </tr>

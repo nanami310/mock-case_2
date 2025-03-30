@@ -1,7 +1,7 @@
 @extends('layouts.adminheader')
 @section('content')
 <div class="staff-list">
-    <h1>スタッフ一覧（管理者）</h1>
+    <h1>スタッフ一覧</h1>
 
     <table>
         <thead>
