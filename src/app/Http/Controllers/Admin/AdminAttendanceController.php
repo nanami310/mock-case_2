@@ -38,24 +38,31 @@ class AdminAttendanceController extends Controller
         return view('admin.attendance_list', compact('attendanceRecords', 'currentYear', 'currentMonth', 'currentDay'));
     }
 
-public function show($id, Request $request)
-{
-    // 出勤情報を取得
-    $attendance = Attendance::with('breaks')->find($id);
 
-    // 勤怠情報がない場合は新しいオブジェクトを作成
-    if (!$attendance) {
-        return redirect()->back()->with('error', '勤怠情報が見つかりません。');
+    public function show($id, Request $request)
+    {
+        // 日付を取得
+        $date = $request->input('date');
+
+        // 出勤情報を取得
+        $attendance = Attendance::with('breaks')->where('user_id', $id)->where('date', $date)->first();
+
+        // 勤怠情報がない場合は新しいオブジェクトを作成
+        if (!$attendance) {
+            $attendance = new Attendance();
+            $attendance->user_id = $id; // ユーザーIDを設定
+            $attendance->date = $date;   // 日付を設定
+            $attendance->check_in = null; // 出勤時刻を空に
+            $attendance->check_out = null; // 退勤時刻を空に
+            $attendance->remarks = null;   // 備考を空に
+        }
+
+        $breakTimes = $attendance->breaks ?? collect(); // breaksを取得（空のコレクションを使用）
+
+        return view('admin.attendance_show', compact('attendance', 'breakTimes'));
     }
 
-    // 日付を取得
-    $date = $request->input('date');
-    $attendance->date = $date; // 渡された日付を設定
 
-    $breakTimes = $attendance->breaks; // breaksを取得
-
-    return view('admin.attendance_show', compact('attendance', 'breakTimes'));
-}
     
 public function update(AttendanceRequest $request, $id) // AttendanceRequestをタイプヒントにする
 {
@@ -82,6 +89,37 @@ public function update(AttendanceRequest $request, $id) // AttendanceRequestを�
 
     $attendance->save(); // 勤怠情報を保存
     return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が更新されました。');
+}
+
+public function store(AttendanceRequest $request)
+{
+    // バリデーション済みのデータを取得
+    $validated = $request->validated();
+
+    // 新しい勤怠情報を作成
+    $attendance = new Attendance();
+    $attendance->user_id = $request->user()->id; // 現在のユーザーIDを設定
+    $attendance->date = $validated['date']; // 日付を設定
+    $attendance->check_in = \Carbon\Carbon::parse($validated['date'] . ' ' . $validated['check_in'] . ':00');
+    $attendance->check_out = \Carbon\Carbon::parse($validated['date'] . ' ' . $validated['check_out'] . ':00');
+    $attendance->remarks = $validated['remarks'] ?? null; // 備考を設定
+    $attendance->save(); // 勤怠情報を保存
+
+    // 休憩時間を保存
+    if (isset($validated['breaks'])) {
+        foreach ($validated['breaks'] as $break) {
+            $start = !empty($break['start']) ? \Carbon\Carbon::parse($validated['date'] . ' ' . $break['start'] . ':00') : null;
+            $end = !empty($break['end']) ? \Carbon\Carbon::parse($validated['date'] . ' ' . $break['end'] . ':00') : null;
+
+            $attendance->breaks()->create([
+                'start' => $start,
+                'end' => $end,
+            ]);
+        }
+    }
+
+    // リダイレクトまたはレスポンス
+    return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が保存されました。');
 }
 
 public function approve($id)

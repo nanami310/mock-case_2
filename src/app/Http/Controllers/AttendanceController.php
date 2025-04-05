@@ -199,6 +199,44 @@ public function update(AttendanceRequest $request, $id)
     ]);
 }
 
+public function store(AttendanceRequest $request)
+{
+    // バリデーション済みのデータを取得
+    $validated = $request->validated();
+
+    // 日付がリクエストに含まれていない場合、現在の日付を使用
+    $date = $request->input('date', \Carbon\Carbon::now()->format('Y-m-d'));
+
+    // 新しい勤怠情報を作成
+    $attendance = new Attendance();
+    $attendance->user_id = $request->user()->id; // 現在のユーザーIDを設定
+    $attendance->date = $date; // 日付を設定
+    $attendance->check_in = \Carbon\Carbon::parse($date . ' ' . $validated['check_in'] . ':00');
+    $attendance->check_out = \Carbon\Carbon::parse($date . ' ' . $validated['check_out'] . ':00');
+    $attendance->remarks = $validated['remarks'] ?? null; // 備考を設定
+    $attendance->status = 'working'; // ステータスを設定（例: 'working'）
+
+    // 勤怠情報を保存
+    $attendance->save();
+
+    // 休憩時間を保存
+    if (isset($validated['breaks'])) {
+        foreach ($validated['breaks'] as $break) {
+            $start = !empty($break['start']) ? \Carbon\Carbon::parse($date . ' ' . $break['start'] . ':00') : null;
+            $end = !empty($break['end']) ? \Carbon\Carbon::parse($date . ' ' . $break['end'] . ':00') : null;
+
+            $attendance->breaks()->create([
+                'start' => $start,
+                'end' => $end,
+            ]);
+        }
+    }
+
+    // リダイレクトまたはレスポンス
+    return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が保存されました。');
+}
+
+
 public function requestChange(AttendanceRequest $request)
 {
     // バリデーションは AttendanceRequest で行われるため、ここでは省略

@@ -21,7 +21,7 @@ class StaffController extends Controller
     }
 
     // スタッフ別勤怠一覧画
-    public function attendance(Request $request, $id)
+public function attendance(Request $request, $id)
 {
     // 年月の取得
     $currentYear = $request->input('year', date('Y'));
@@ -41,6 +41,9 @@ class StaffController extends Controller
                                    ->whereMonth('date', $currentMonth)
                                    ->get();
 
+    // ユーザー情報を取得
+    $user = User::find($id);
+
     return view('admin.attendance_staff', [
         'id' => $id,
         'currentYear' => $currentDate->year,
@@ -48,19 +51,29 @@ class StaffController extends Controller
         'previousMonth' => $previousMonth,
         'nextMonth' => $nextMonth,
         'attendanceRecords' => $attendanceRecords,
+        'user' => $user, // ユーザー情報を渡す
     ]);
 }
 
 public function show($id, $date)
 {
     // 日付をCarbonオブジェクトに変換
-    $attendance = Attendance::with('breaks') // breaksも一緒にロード
+    $attendance = Attendance::with('breaks')
                             ->where('user_id', $id)
                             ->where('date', $date)
                             ->first();
 
-    return view('admin.attendance_detail', compact('attendance'));
+    if (!$attendance) {
+        // 勤怠データが見つからない場合、エラーメッセージを表示する
+        return view('admin.attendance_show', [
+            'attendance' => null,
+            'error' => '勤怠データが見つかりません。'
+        ]);
+    }
+
+    return view('admin.attendance_show', compact('attendance'));
 }
+
 
     // CSV出力メソッド
     public function exportCsv(Request $request, $id)

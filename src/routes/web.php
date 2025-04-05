@@ -62,6 +62,10 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 
 Route::get('/admin/attendance/{id}', [AdminAttendanceController::class, 'show'])->name('admin.attendance.show');
 Route::post('/admin/attendance/{id}/update', [AdminAttendanceController::class, 'update'])->name('admin.attendance.update.individual'); // 名前を変更
+Route::post('admin/attendance/store', [AttendanceController::class, 'store'])->name('admin.attendance.store');
+Route::prefix('admin')->group(function () {
+    Route::resource('attendance', AdminAttendanceController::class);
+});
 
 Route::get('/admin/attendance', [AdminAttendanceController::class, 'index'])->name('admin.attendance.index');
 
