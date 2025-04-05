@@ -1,9 +1,11 @@
 @extends('layouts.adminheader')
 @section('content')
 <div class="attendance-list">
-    @foreach($attendanceRecords as $attendance)
-    <h1>{{ $attendance->user->name }}さんの勤怠一覧</h1>
-    @endforeach
+    <h1>{{ $attendanceRecords->isNotEmpty() ? $attendanceRecords->first()->user->name : 'ユーザー' }}さんの勤怠一覧</h1>
+    @if ($attendanceRecords->isEmpty())
+        <p></p>
+    @endif
+
     <div class="month-selector">
         <button onclick="changeMonth(-1)">← 前月</button>
         <span id="current-month">{{ sprintf('%04d', $currentYear) }}/{{ sprintf('%02d', $currentMonth) }}</span>
@@ -71,9 +73,9 @@
                     </td>
                     <td>
                         @if ($record)
-                            <a href="{{ route('admin.attendance.show', ['id' => $record->user_id, 'date' => $record->date]) }}">詳細</a>
+                            <a href="{{ route('admin.attendance.show', ['id' => $record->user_id, 'date' => $record->date->format('Y-m-d')]) }}">詳細</a>
                         @else
-                            <a href="{{ route('admin.attendance.show', ['id' => $id, 'date' => $date]) }}">詳細</a> <!-- 日付を渡す -->
+                            <a href="#">詳細</a>
                         @endif
                     </td>
                 </tr>

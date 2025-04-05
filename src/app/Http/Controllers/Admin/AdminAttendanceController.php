@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceStatus;
 use Carbon\Carbon;
 use App\Models\BreakTime;
+use App\Http\Requests\AttendanceRequest;
 
 class AdminAttendanceController extends Controller
 {
@@ -56,16 +57,8 @@ public function show($id, Request $request)
     return view('admin.attendance_show', compact('attendance', 'breakTimes'));
 }
     
-public function update(Request $request, $id)
+public function update(AttendanceRequest $request, $id) // AttendanceRequestをタイプヒントにする
 {
-    // バリデーションの変更
-    $request->validate([
-        'check_in' => 'required|date_format:H:i',
-        'check_out' => 'required|date_format:H:i',
-        'breaks.*.start' => 'nullable|date_format:H:i',
-        'breaks.*.end' => 'nullable|date_format:H:i',
-    ]);
-
     $attendance = Attendance::findOrFail($id);
     $date = now()->format('Y-m-d');
 
@@ -89,12 +82,6 @@ public function update(Request $request, $id)
 
     $attendance->save(); // 勤怠情報を保存
     return redirect()->route('admin.attendance.list')->with('success', '勤怠情報が更新されました。');
-}
-
-public function showCorrectionRequest($id)
-{
-    $attendanceStatus = AttendanceStatus::with('user')->where('attendance_id', $id)->firstOrFail();
-    return view('admin.attendance_correction_approve', compact('attendanceStatus'));
 }
 
 public function approve($id)
@@ -205,4 +192,9 @@ public function approve($id)
 
         return view('admin.attendance_request_list', compact('pendingRequests', 'approvedRequests'));
     }
+    public function showCorrectionRequest($id)
+{
+    $attendanceStatus = AttendanceStatus::with('user')->where('attendance_id', $id)->firstOrFail();
+    return view('admin.attendance_correction_approve', compact('attendanceStatus'));
+}
 }

@@ -51,6 +51,17 @@ class StaffController extends Controller
     ]);
 }
 
+public function show($id, $date)
+{
+    // 日付をCarbonオブジェクトに変換
+    $attendance = Attendance::with('breaks') // breaksも一緒にロード
+                            ->where('user_id', $id)
+                            ->where('date', $date)
+                            ->first();
+
+    return view('admin.attendance_detail', compact('attendance'));
+}
+
     // CSV出力メソッド
     public function exportCsv(Request $request, $id)
 {

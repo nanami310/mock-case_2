@@ -18,7 +18,7 @@
                 <span class="error">{{ $message }}</span>
             @enderror
         </div>
-        <button type="submit">ログイン</button>
+        <button type="submit">ログインする</button>
     </form>
     <p><a href="{{ url('/register') }}">会員登録はこちら</a></p>
 </div>

@@ -24,6 +24,7 @@ class AttendanceRequest extends FormRequest
             'check_out.after' => '出勤時間もしくは退勤時間が不適切な値です',
             'breaks.*.start.before' => '休憩時間が勤務時間外です',
             'breaks.*.end.after' => '休憩時間が勤務時間外です',
+            'breaks.*.end.before' => '休憩時間が勤務時間外です',
             'remarks.required' => '備考を記入してください',
         ];
     }

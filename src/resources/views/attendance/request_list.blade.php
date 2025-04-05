@@ -10,10 +10,14 @@
     <!-- タブ -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">承認待ちの申請</a>
+            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">
+                承認待ちの申請
+            </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認済みの申請</a>
+            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">
+                承認済みの申請
+            </a>
         </li>
     </ul>
 
@@ -27,9 +31,8 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>ユーザー名</th>
-                            <th>チェックイン</th>
-                            <th>チェックアウト</th>
+                            <th>名前</th>
+                            <th>対象日時</th>
                             <th>備考</th>
                             <th>申請日時</th>
                             <th>詳細</th>
@@ -38,12 +41,11 @@
                     <tbody>
                         @foreach($pendingRequests as $request)
                             <tr>
-                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->status === 'pending' ? '承認待ち' : '承認済み' }}</td>
                                 <td>{{ $request->user ? $request->user->name : '不明' }}</td>
-                                <td>{{ $request->check_in }}</td>
-                                <td>{{ $request->check_out }}</td>
+                                <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
@@ -61,9 +63,8 @@
                     <thead>
                         <tr>
                             <th>状態</th>
-                            <th>ユーザー名</th>
-                            <th>チェックイン</th>
-                            <th>チェックアウト</th>
+                            <th>名前</th>
+                            <th>対象日時</th>
                             <th>備考</th>
                             <th>申請日時</th>
                             <th>詳細</th>
@@ -72,12 +73,11 @@
                     <tbody>
                         @foreach($approvedRequests as $request)
                             <tr>
-                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->status === 'pending' ? '承認待ち' : '承認済み' }}</td>
                                 <td>{{ $request->user ? $request->user->name : '不明' }}</td>
-                                <td>{{ $request->check_in }}</td>
-                                <td>{{ $request->check_out }}</td>
+                                <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach

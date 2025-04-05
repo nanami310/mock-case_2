@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>修正申請承認画面</h1>
+    <h1>勤怠詳細</h1>
     
     <div class="form-group">
         <label for="name">名前</label>
@@ -15,22 +15,17 @@
     </div>
 
     <div class="form-group">
-        <label for="check_in">出勤</label>
-        <p>{{ \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_in)->format('H:i') }}</p>
-    </div>
-
-    <div class="form-group">
-        <label for="check_out">退勤</label>
+        <label for="check_in">出勤・退勤</label>
+        <p>{{ \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_in)->format('H:i') }}</p>～
         <p>{{ \Carbon\Carbon::createFromFormat('H:i:s', $attendanceStatus->check_out)->format('H:i') }}</p>
     </div>
 
+
 <div class="form-group">
-    <label for="break_time">休憩時間</label>
+    <label for="break_time">休憩</label>
     @if($attendanceStatus->break_start || $attendanceStatus->break_end)
         <div class="form-group">
-            <label>休憩開始時間</label>
-            <p>{{ $attendanceStatus->break_start ? \Carbon\Carbon::parse($attendanceStatus->break_start)->format('H:i') : '未設定' }}</p>
-            <label>休憩終了時間</label>
+            <p>{{ $attendanceStatus->break_start ? \Carbon\Carbon::parse($attendanceStatus->break_start)->format('H:i') : '未設定' }}</p>～
             <p>{{ $attendanceStatus->break_end ? \Carbon\Carbon::parse($attendanceStatus->break_end)->format('H:i') : '未設定' }}</p>
         </div>
     @else
@@ -52,9 +47,5 @@
         </form>
     @endif
 
-    <form action="{{ route('admin.attendance.reject', $attendanceStatus->attendance_id) }}" method="POST" style="display:inline;">
-        @csrf
-        <button type="submit" class="btn btn-danger">拒否</button>
-    </form>
 </div>
 @endsection

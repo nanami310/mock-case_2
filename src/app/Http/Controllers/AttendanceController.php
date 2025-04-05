@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceStatus;
 use Carbon\Carbon;
 use App\Models\BreakTime;
+use App\Http\Requests\AttendanceRequest;
 
 class AttendanceController extends Controller
 {
@@ -55,7 +56,7 @@ class AttendanceController extends Controller
     $attendance = $this->getAttendanceData(auth()->user());
 
     if ($attendance && $attendance->status === 'on_duty') {
-        return redirect()->back()->with('message', 'すでに出勤中です。');
+        return redirect()->back()->with('message', '');
     }
 
     $attendance = Attendance::updateOrCreate(
@@ -68,7 +69,7 @@ class AttendanceController extends Controller
         ]
     );
 
-    return redirect()->back()->with('message', '出勤しました。');
+    return redirect()->back()->with('message', '');
 }
 
 public function checkOut(Request $request)
@@ -80,10 +81,10 @@ public function checkOut(Request $request)
         $attendance->total_hours = $attendance->check_out->diffInMinutes($attendance->check_in) - $attendance->break_time;
         $attendance->status = 'off_work';
         $attendance->save();
-        return redirect()->back()->with('message', '退勤しました。');
+        return redirect()->back()->with('message', 'お疲れさまでした。');
     }
 
-    return redirect()->back()->with('message', '出勤中ではありません。');
+    return redirect()->back()->with('message', '');
 }
 
     public function takeBreak(Request $request)
@@ -94,10 +95,10 @@ public function checkOut(Request $request)
             $attendance->status = 'on_break';
             $attendance->save();
             $attendance->breaks()->create(['start' => now(), 'end' => null]);
-            return redirect()->back()->with('message', '休憩に入りました。');
+            return redirect()->back()->with('message', '');
         }
 
-        return redirect()->back()->with('message', '出勤中ではありません。');
+        return redirect()->back()->with('message', '');
     }
 
     public function returnFromBreak(Request $request)
@@ -117,10 +118,10 @@ public function checkOut(Request $request)
                 $attendance->break_time += $breakEnd->diffInMinutes($breakStart);
                 $attendance->save();
             }
-            return redirect()->back()->with('message', '勤務に戻りました。');
+            return redirect()->back()->with('message', '');
         }
 
-        return redirect()->back()->with('message', '休憩中ではありません。');
+        return redirect()->back()->with('message', '');
     }
 
     public function attendanceList(Request $request)
@@ -162,17 +163,9 @@ public function checkOut(Request $request)
         return view('attendance.show', compact('attendance', 'breakTimes'));
     }
 
-
-    public function update(Request $request, $id)
+public function update(AttendanceRequest $request, $id)
 {
-    // バリデーション
-    $request->validate([
-        'check_in' => 'required|date_format:H:i',
-        'check_out' => 'required|date_format:H:i',
-        'remarks' => 'required|string',
-        'breaks.*.start' => 'required|date_format:H:i',
-        'breaks.*.end' => 'nullable|date_format:H:i',
-    ]);
+    // バリデーションは AttendanceRequest で行われるため、ここでは省略
 
     // Attendanceから情報を取得
     $attendance = Attendance::findOrFail($id);
@@ -182,14 +175,14 @@ public function checkOut(Request $request)
     $attendance->check_out = now()->format('Y-m-d') . ' ' . $request->check_out . ':00'; // 日付と時間を結合
     $attendance->remarks = $request->remarks;
     $attendance->save();
-
+    
     // 休憩時間の更新
     foreach ($attendance->breaks as $index => $break) {
         $break->start = now()->format('Y-m-d') . ' ' . $request->breaks[$index]['start'];
         $break->end = $request->breaks[$index]['end'] ? now()->format('Y-m-d') . ' ' . $request->breaks[$index]['end'] : null;
         $break->save();
     }
-
+    
     // 新しい休憩時間の追加
     for ($i = count($attendance->breaks); $i < count($request->breaks); $i++) {
         $breakTime = new BreakTime();
@@ -198,7 +191,7 @@ public function checkOut(Request $request)
         $breakTime->end = $request->breaks[$i]['end'] ? now()->format('Y-m-d') . ' ' . $request->breaks[$i]['end'] : null;
         $breakTime->save();
     }
-
+    
     // ビューを表示
     return view('attendance.show', [
         'attendance' => $attendance,
@@ -206,16 +199,9 @@ public function checkOut(Request $request)
     ]);
 }
 
-public function requestChange(Request $request)
+public function requestChange(AttendanceRequest $request)
 {
-    $request->validate([
-        'attendance_id' => 'required|exists:attendances,id',
-        'check_in' => 'nullable|date_format:H:i',
-        'check_out' => 'nullable|date_format:H:i',
-        'breaks.*.start' => 'nullable|date_format:H:i',
-        'breaks.*.end' => 'nullable|date_format:H:i',
-        'remarks' => 'nullable|string',
-    ]);
+    // バリデーションは AttendanceRequest で行われるため、ここでは省略
 
     $attendance = Attendance::findOrFail($request->attendance_id);
     $attendanceStatus = new AttendanceStatus();
@@ -233,11 +219,11 @@ public function requestChange(Request $request)
             }
         }
     }
-
+    
     $attendanceStatus->remarks = $request->remarks;
     $attendanceStatus->status = 'pending';
     $attendanceStatus->save();
-
+    
     return redirect()->back()->with('message', '勤怠時間および休憩時間の変更申請が送信されました。');
 }
 

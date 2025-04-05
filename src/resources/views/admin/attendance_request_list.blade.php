@@ -11,12 +11,10 @@
     <!-- タブ -->
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">
-承認待ち</a>
+            <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab" aria-controls="pending" aria-selected="true">承認待ち</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認
-済み</a>
+            <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab" aria-controls="approved" aria-selected="false">承認済み</a>
         </li>
     </ul>
 
@@ -31,8 +29,7 @@
                         <tr>
                             <th>状態</th>
                             <th>名前</th>
-                            <th>チェックイン</th>
-                            <th>チェックアウト</th>
+                            <th>対象日時</th>
                             <th>申請理由</th>
                             <th>申請日時</th>
                             <th>詳細</th>
@@ -41,12 +38,11 @@
                     <tbody>
                         @foreach($pendingRequests as $request)
                             <tr>
-                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
                                 <td>{{ $request->user ? $request->user->name : '不明' }}</td>
-                                <td>{{ $request->check_in }}</td>
-                                <td>{{ $request->check_out }}</td>
+                                <td>{{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('Y/m/d') : '不明' }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td>{{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('Y/m/d') : '不明' }}</td>
                                 <td><a href="{{ route('admin.attendance.correction.approve', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
@@ -65,8 +61,7 @@
                         <tr>
                             <th>状態</th>
                             <th>名前</th>
-                            <th>チェックイン</th>
-                            <th>チェックアウト</th>
+                            <th>対象日時</th>
                             <th>申請理由</th>
                             <th>申請日時</th>
                             <th>詳細</th>
@@ -75,12 +70,11 @@
                     <tbody>
                         @foreach($approvedRequests as $request)
                             <tr>
-                                <td>{{ $request->status }}</td>
+                                <td>{{ $request->status === 'approved' ? '承認済み' : '承認待ち' }}</td>
                                 <td>{{ $request->user ? $request->user->name : '不明' }}</td>
-                                <td>{{ $request->check_in }}</td>
-                                <td>{{ $request->check_out }}</td>
+                                <td>{{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('Y/m/d') : '不明' }}</td>
                                 <td>{{ $request->remarks }}</td>
-                                <td>{{ $request->created_at->format('Y年n月j日 H:i') }}</td>
+                                <td>{{ $request->created_at ? \Carbon\Carbon::parse($request->created_at)->format('Y/m/d') : '不明' }}</td>
                                 <td><a href="{{ route('admin.attendance.correction.approve', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
                             </tr>
                         @endforeach
