@@ -46,7 +46,9 @@
                                 <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td>{{ $request->remarks }}</td>
                                 <td>{{ $request->created_at->format('Y年n月j日') }}</td>
-                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
+                                <td>
+                                    <a href="{{ route('attendance.show2', ['id' => $request->created_at ? $request->created_at->format('Y-m-d') : now()->format('Y-m-d')]) }}" class="btn btn-info">詳細</a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -78,7 +80,9 @@
                                 <td>{{ $request->created_at->format('Y年n月j日') }}</td>
                                 <td>{{ $request->remarks }}</td>
                                 <td>{{ $request->created_at->format('Y年n月j日') }}</td>
-                                <td><a href="{{ route('attendance.show', $request->attendance_id) }}" class="btn btn-info">詳細</a></td>
+                                <td>
+                                    <a href="{{ route('attendance.show2', ['id' => $request->created_at ? $request->created_at->format('Y-m-d') : now()->format('Y-m-d')]) }}" class="btn btn-info">詳細</a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

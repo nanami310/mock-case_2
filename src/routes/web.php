@@ -39,12 +39,15 @@ Route::post('/attendance/take-break', [AttendanceController::class, 'takeBreak']
 Route::post('/attendance/return-from-break', [AttendanceController::class, 'returnFromBreak']);
 
 Route::get('/attendance/list', [AttendanceController::class, 'attendanceList'])->name('attendance.list');
-Route::get('/attendance/{id}', [AttendanceController::class, 'show'])->name('attendance.show');
+Route::get('/attendance/{id}', [AttendanceController::class, 'show2'])->name('attendance.show2');
 Route::put('/attendance/{id}', [AttendanceController::class, 'update'])->name('attendance.update');
 
 Route::post('/attendance/request-change/{id}', [AttendanceController::class, 'requestChange'])->name('attendance.requestChange');
 
 Route::get('/attendance/approvals', [AttendanceController::class, 'approvals'])->name('attendance.approvals');
+Route::post('/attendance/request-change2', [AttendanceController::class, 'requestChange2'])->name('attendance.requestChange2');
+
+
 
 // 一般ユーザー用ルート
 Route::middleware(['auth'])->group(function () {

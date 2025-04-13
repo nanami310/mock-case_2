@@ -70,11 +70,9 @@
                             {{ $record ? sprintf('%02d:%02d', $hours, $minutes) : '' }}
                         </td>
                         <td>
-                            @if ($record)
-                                <a href="{{ route('attendance.show', $record->id) }}">詳細</a>
-                            @else
-                                <a href="{{ route('attendance.show', ['id' => $attendanceRecords->first()->user_id, 'date' => $date]) }}">詳細</a>
-                            @endif
+                            <a href="{{ route('attendance.show2', ['id' => $record ? $record->date->format('Y-m-d') : $date]) }}">
+                                詳細
+                            </a>
                         </td>
                     </tr>
                 @endfor
